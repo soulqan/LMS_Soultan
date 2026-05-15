@@ -4,7 +4,9 @@
             <div class="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
                 <div class="mb-8 text-center">
                     <a href="{{ route('home') }}" class="mb-4 inline-flex items-center justify-center">
-                        @include('filament.admin-logo')
+                        <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white">
+                            <x-app-icon name="book-open" class="h-5 w-5" />
+                        </span>
                     </a>
                     <h1 class="text-2xl font-semibold text-slate-900">Student Register</h1>
                     <p class="mt-2 text-sm text-slate-600">Create your LearningHub student account.</p>
