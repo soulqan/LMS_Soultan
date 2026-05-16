@@ -1,131 +1,202 @@
-<x-layouts.app :title="config('app.name', 'LearningHub') . ' | Course Catalog'">
-    <div data-catalog-page class="min-h-dvh bg-white text-slate-900">
-        <header class="sticky top-0 z-50 border-b border-slate-200 bg-white">
-            <div class="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
-                <a href="{{ route('home') }}" class="flex items-center gap-2 font-semibold text-slate-900">
-                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white">
-                        <x-app-icon name="book-open" class="h-5 w-5" />
-                    </span>
-                    <span class="text-lg">LearningHub</span>
-                </a>
+<x-layouts.app
+    :title="config('app.name', 'LearningHub') . ' | Focused learning for modern students'"
+    meta-description="LearningHub is a calm, minimalist learning platform for focused learning, clear progress, and portfolio-ready courses."
+>
+    @php
+        $spotlight = $featuredCourses->first();
+        $secondaryCourses = $featuredCourses->skip(1);
+    @endphp
 
-                <label class="relative hidden w-[384px] max-w-full lg:block">
-                    <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-                        <x-app-icon name="search" class="h-4 w-4" />
-                    </span>
-                    <input
-                        type="search"
-                        placeholder="Search courses"
-                        data-course-search
-                        class="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                </label>
+    <div class="min-h-dvh bg-white text-slate-900">
+        <x-site-header />
 
-                <div class="ml-auto flex items-center gap-3">
-                    <a href="{{ route('courses.index') }}" class="hidden text-sm font-medium text-slate-700 transition hover:text-blue-600 sm:inline-flex">My Courses</a>
+        <main>
+            <section class="border-b border-slate-200 bg-gradient-to-br from-slate-50 via-white to-blue-50">
+                <div class="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1.08fr_0.92fr] lg:px-8 lg:py-24">
+                    <div class="space-y-8">
+                        <span class="inline-flex rounded-full bg-blue-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.28em] text-blue-600">
+                            Minimalist LMS
+                        </span>
 
-                    <div class="relative">
-                        <button
-                            type="button"
-                            data-profile-toggle
-                            class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-sm font-semibold text-blue-600">A</span>
-                            <x-app-icon name="chevron-down" class="h-4 w-4 text-slate-500" />
-                        </button>
-
-                        <div
-                            data-profile-menu
-                            class="absolute right-0 mt-3 hidden w-56 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg"
-                        >
-                            <a href="#" class="block px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-50">Profile</a>
-                            <a href="#" class="block px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-50">Progress</a>
-                            <a href="#" class="block px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-50">Settings</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <section class="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-            <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-                <div class="max-w-3xl">
-                    <p class="text-sm font-medium uppercase tracking-[0.3em] text-blue-100">Minimalist LMS</p>
-                    <h1 class="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">Upgrade Your Skills</h1>
-                    <p class="mt-5 max-w-2xl text-lg leading-8 text-blue-50">
-                        Learn from experts, follow a clean path, and keep your progress in sync with a focused, portfolio-ready learning experience.
-                    </p>
-
-                    <a
-                        href="#catalog"
-                        class="mt-8 inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white"
-                    >
-                        Explore Courses
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <main id="catalog" class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-            <div class="grid gap-8 lg:grid-cols-[256px_minmax(0,1fr)]">
-                <aside class="lg:sticky lg:top-24 lg:h-fit">
-                    <div class="rounded-xl border border-slate-200 bg-white p-4">
                         <div class="space-y-5">
-                            <div>
-                                <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-900">Categories</h2>
-                                <div class="mt-3 grid gap-2">
-                                    <button type="button" data-category-button="all" class="rounded-xl bg-blue-50 px-4 py-3 text-left text-sm font-medium text-blue-600 transition hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                        All
-                                    </button>
-                                    @foreach ($categories as $category)
-                                        <button
-                                            type="button"
-                                            data-category-button="{{ $category->slug }}"
-                                            class="rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        >
-                                            {{ $category->name }}
-                                        </button>
-                                    @endforeach
-                                </div>
-                            </div>
+                            <h1 class="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">
+                                Learn without distraction.
+                                <span class="block text-blue-600">Build skills that feel real.</span>
+                            </h1>
+                            <p class="max-w-2xl text-base leading-8 text-slate-700 sm:text-lg">
+                                LearningHub helps students move through focused video lessons, track progress offline, and discover courses without the clutter of a traditional course list homepage.
+                            </p>
+                        </div>
 
-                            <div>
-                                <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-900">Level</h2>
-                                <div class="mt-3 space-y-3">
-                                    @foreach (['beginner' => 'Beginner', 'intermediate' => 'Intermediate', 'advanced' => 'Advanced'] as $value => $label)
-                                        <label class="flex items-center gap-3 text-sm text-slate-700">
-                                            <input type="checkbox" value="{{ $value }}" data-level-filter class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
-                                            <span>{{ $label }}</span>
-                                        </label>
-                                    @endforeach
-                                </div>
+                        <div class="flex flex-wrap gap-3">
+                            <a href="{{ route('courses.index') }}" class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Explore Courses
+                            </a>
+                            <a href="{{ route('student.register') }}" class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Create Student Account
+                            </a>
+                        </div>
+
+                        <div class="grid gap-4 sm:grid-cols-3">
+                            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                <p class="text-3xl font-semibold text-slate-900">{{ number_format($stats['courses']) }}</p>
+                                <p class="mt-1 text-sm text-slate-600">Available courses</p>
+                            </div>
+                            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                <p class="text-3xl font-semibold text-slate-900">{{ number_format($stats['lessons']) }}</p>
+                                <p class="mt-1 text-sm text-slate-600">Video lessons</p>
+                            </div>
+                            <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                <p class="text-3xl font-semibold text-slate-900">{{ number_format($stats['categories']) }}</p>
+                                <p class="mt-1 text-sm text-slate-600">Learning tracks</p>
+                            </div>
+                        </div>
+
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Focused flow</p>
+                                <p class="mt-2 text-sm leading-7 text-slate-600">
+                                    A landing page designed to introduce the platform first, not overwhelm learners with filters.
+                                </p>
+                            </div>
+                            <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Offline progress</p>
+                                <p class="mt-2 text-sm leading-7 text-slate-600">
+                                    Lesson completion stays in the browser so students can return to where they left off.
+                                </p>
                             </div>
                         </div>
                     </div>
-                </aside>
 
-                <section class="space-y-6">
-                    <div class="lg:hidden">
-                        <label class="relative block">
-                            <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
-                                <x-app-icon name="search" class="h-4 w-4" />
-                            </span>
-                            <input
-                                type="search"
-                                placeholder="Search courses"
-                                data-course-search
-                                class="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                        </label>
+                    <div class="space-y-4">
+                        @if ($spotlight)
+                            <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
+                                <div class="relative aspect-[4/5]">
+                                    <img
+                                        src="{{ $spotlight['meta']['thumbnail'] }}"
+                                        alt="{{ $spotlight['course']->title }}"
+                                        class="h-full w-full object-cover"
+                                        loading="lazy"
+                                    >
+                                    <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+                                    <div class="absolute inset-x-0 bottom-0 p-6">
+                                        <div class="flex items-center justify-between gap-3">
+                                            <x-badge tone="blue">{{ $spotlight['meta']['category_badge'] }}</x-badge>
+                                            <x-badge :tone="$spotlight['course']->level->tone()">{{ $spotlight['course']->level->label() }}</x-badge>
+                                        </div>
+
+                                        <h2 class="mt-4 text-2xl font-semibold text-white">{{ $spotlight['course']->title }}</h2>
+                                        <p class="mt-2 text-sm leading-6 text-slate-200">{{ $spotlight['meta']['summary'] }}</p>
+
+                                        <div class="mt-5 flex flex-wrap gap-3">
+                                            <a href="{{ route('course.show', $spotlight['course']) }}" class="inline-flex items-center justify-center rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100">
+                                                View Course
+                                            </a>
+                                            <a href="{{ route('courses.index') }}" class="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15">
+                                                Browse Catalog
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            @foreach ($secondaryCourses as $item)
+                                <a href="{{ route('course.show', $item['course']) }}" class="group rounded-2xl border border-slate-200 bg-white p-4 transition hover:-translate-y-1 hover:shadow-lg">
+                                    <div class="flex items-center gap-4">
+                                        <div class="h-16 w-20 overflow-hidden rounded-xl bg-slate-100">
+                                            <img
+                                                src="{{ $item['meta']['thumbnail'] }}"
+                                                alt="{{ $item['course']->title }}"
+                                                class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                                                loading="lazy"
+                                            >
+                                        </div>
+                                        <div class="min-w-0">
+                                            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">{{ $item['meta']['category_badge'] }}</p>
+                                            <h3 class="mt-1 truncate text-base font-semibold text-slate-900">{{ $item['course']->title }}</h3>
+                                            <p class="mt-1 text-sm text-slate-600">{{ $item['meta']['level_label'] }}</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="benefits" class="bg-white">
+                <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+                    <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                        <div>
+                            <p class="text-sm font-semibold uppercase tracking-[0.25em] text-blue-600">Why it works</p>
+                            <h2 class="mt-3 text-3xl font-semibold tracking-tight text-slate-900">A cleaner path for students</h2>
+                            <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
+                                The homepage introduces the product, the catalog helps with discovery, and the player keeps the actual learning experience focused.
+                            </p>
+                        </div>
+
+                        <a href="{{ route('courses.index') }}" class="text-sm font-semibold text-blue-600 transition hover:text-blue-700">
+                            Open the course catalog
+                        </a>
                     </div>
 
-                    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                        @foreach ($featuredCourses as $item)
-                            <x-course-card :course="$item['course']" :meta="$item['meta']" data-course-card />
-                        @endforeach
+                    <div class="mt-10 grid gap-6 md:grid-cols-3">
+                        <article class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Video-first</p>
+                            <h3 class="mt-3 text-xl font-semibold text-slate-900">Simple lessons, clear flow</h3>
+                            <p class="mt-3 text-sm leading-7 text-slate-600">
+                                Lessons are organized to help learners keep moving without extra friction.
+                            </p>
+                        </article>
+
+                        <article class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Admin-friendly</p>
+                            <h3 class="mt-3 text-xl font-semibold text-slate-900">Manage content in one place</h3>
+                            <p class="mt-3 text-sm leading-7 text-slate-600">
+                                Courses, lessons, and visibility are easy to control from the admin panel.
+                            </p>
+                        </article>
+
+                        <article class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+                            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-600">Offline progress</p>
+                            <h3 class="mt-3 text-xl font-semibold text-slate-900">Keep learning state local</h3>
+                            <p class="mt-3 text-sm leading-7 text-slate-600">
+                                Progress is stored in the browser so students can come back where they left off.
+                            </p>
+                        </article>
                     </div>
-                </section>
-            </div>
+                </div>
+            </section>
+
+            <section id="featured" class="border-t border-slate-200 bg-slate-50">
+                <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+                    <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                        <div>
+                            <p class="text-sm font-semibold uppercase tracking-[0.25em] text-blue-600">Featured courses</p>
+                            <h2 class="mt-3 text-3xl font-semibold tracking-tight text-slate-900">A few starting points</h2>
+                            <p class="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
+                                These are just highlights. The full catalog lives on the course browse page.
+                            </p>
+                        </div>
+
+                        <a href="{{ route('courses.index') }}" class="text-sm font-semibold text-blue-600 transition hover:text-blue-700">
+                            Browse all courses
+                        </a>
+                    </div>
+
+                    <div class="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                        @forelse ($featuredCourses as $item)
+                            <x-course-card :course="$item['course']" :meta="$item['meta']" />
+                        @empty
+                            <div class="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
+                                No available courses yet.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </section>
         </main>
     </div>
 </x-layouts.app>

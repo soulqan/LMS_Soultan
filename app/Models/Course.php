@@ -23,12 +23,14 @@ class Course extends Model
         'description',
         'thumbnail',
         'level',
+        'is_available',
     ];
 
     protected function casts(): array
     {
         return [
             'level' => CourseLevel::class,
+            'is_available' => 'boolean',
         ];
     }
 

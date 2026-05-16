@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Courses\Schemas;
 
 use App\Enums\CourseLevel;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -23,7 +24,13 @@ class CourseForm
                 Textarea::make('description')
                     ->required()
                     ->columnSpanFull(),
-                TextInput::make('thumbnail'),
+                FileUpload::make('thumbnail')
+                    ->label('Thumbnail Photo')
+                    ->image()
+                    ->disk('public')
+                    ->directory('courses')
+                    ->imagePreviewHeight('220')
+                    ->columnSpanFull(),
                 Select::make('level')
                     ->options(CourseLevel::class)
                     ->required(),
@@ -31,6 +38,8 @@ class CourseForm
                     ->relationship()
                     ->orderColumn('order')
                     ->addActionLabel('Add lesson')
+                    ->itemLabel(fn (array $state): ?string => $state['title'] ?? 'Untitled lesson')
+                    ->itemNumbers()
                     ->reorderableWithButtons()
                     ->collapsible()
                     ->collapsed()

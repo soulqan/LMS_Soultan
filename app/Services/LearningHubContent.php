@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\CourseLevel;
 use App\Models\Course;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -11,12 +12,15 @@ class LearningHubContent
     public function catalogFilters(): array
     {
         return [
-            'all' => 'All',
-            'web-development' => 'Web Development',
-            'backend-development' => 'Backend Development',
-            'design' => 'Design',
-            'data-science' => 'Data Science',
-            'mobile-development' => 'Mobile Development',
+            'categories' => [
+                'all' => 'All',
+                'web-development' => 'Web Development',
+                'backend-development' => 'Backend Development',
+                'design' => 'Design',
+                'data-science' => 'Data Science',
+                'mobile-development' => 'Mobile Development',
+            ],
+            'levels' => CourseLevel::options(),
         ];
     }
 
@@ -28,7 +32,7 @@ class LearningHubContent
             'category_badge' => $meta['category_badge'],
             'level_label' => $course->level->label(),
             'level_tone' => $course->level->tone(),
-            'thumbnail' => $meta['thumbnail'],
+            'thumbnail' => $course->thumbnailUrl(),
             'summary' => $meta['summary'],
             'category_slug' => $meta['category_slug'],
         ];
@@ -47,7 +51,7 @@ class LearningHubContent
             'about' => $meta['about'],
             'learn' => $meta['learn'],
             'instructor' => $meta['instructor'],
-            'thumbnail' => $meta['thumbnail'],
+            'thumbnail' => $course->thumbnailUrl(),
         ];
     }
 

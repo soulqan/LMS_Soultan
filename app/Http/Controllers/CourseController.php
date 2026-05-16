@@ -11,24 +11,25 @@ class CourseController extends Controller
 {
     public function index(LearningHubContent $content): View
     {
-        $featuredCourses = Course::query()
-            ->with(['category', 'lessons'])
-            ->latest()
-            ->get();
-
         $categories = Category::query()
-            ->withCount('courses')
+            ->withCount(['courses' => fn ($query) => $query->where('is_available', true)])
             ->orderBy('name')
             ->get();
 
-        $featuredCourses = $featuredCourses->take(8)->map(fn (Course $course) => [
+        $courses = Course::query()
+            ->with(['category', 'lessons'])
+            ->where('is_available', true)
+            ->latest()
+            ->get();
+
+        $featuredCourses = $courses->map(fn (Course $course) => [
             'course' => $course,
             'meta' => $content->courseCardMeta($course),
         ]);
 
-        return view('home', [
-            'featuredCourses' => $featuredCourses,
+        return view('courses.index', [
             'categories' => $categories,
+            'featuredCourses' => $featuredCourses,
             'filters' => $content->catalogFilters(),
         ]);
     }

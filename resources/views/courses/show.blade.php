@@ -1,33 +1,11 @@
 <x-layouts.app :title="$course->title . ' | LearningHub'" :meta-description="\Illuminate\Support\Str::limit($course->description, 155)">
     <div class="min-h-dvh bg-white text-slate-900">
-        <header class="sticky top-0 z-50 border-b border-slate-200 bg-white">
-            <div class="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
-                <a href="{{ route('home') }}" class="inline-flex items-center gap-2 text-slate-700 transition hover:text-blue-600">
-                    <x-app-icon name="chevron-left" class="h-5 w-5" />
-                    <span class="hidden sm:inline">Back</span>
-                </a>
-
-                <div class="min-w-0 flex-1">
-                    <p class="text-sm font-medium text-slate-500 sm:hidden">Course</p>
-                    <h1 class="truncate text-lg font-semibold text-slate-900 sm:text-xl">{{ $course->title }}</h1>
-                </div>
-
-                <nav class="hidden items-center gap-6 text-sm font-medium text-slate-700 md:flex">
-                    <a href="{{ route('home') }}" class="transition hover:text-blue-600">Home</a>
-                    <a href="{{ route('courses.index') }}" class="transition hover:text-blue-600">My Courses</a>
-                </nav>
-
-                <div class="relative md:hidden">
-                    <button type="button" data-mobile-menu-toggle class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50">
-                        <x-app-icon name="menu" class="h-5 w-5" />
-                    </button>
-                    <div data-mobile-menu class="absolute right-0 mt-3 hidden w-48 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
-                        <a href="{{ route('home') }}" class="block px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-50">Home</a>
-                        <a href="{{ route('courses.index') }}" class="block px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-50">My Courses</a>
-                    </div>
-                </div>
-            </div>
-        </header>
+        <x-site-header
+            :title="$course->title"
+            :eyebrow="$course->category->name"
+            :back-url="route('home')"
+            back-label="Back"
+        />
 
         <main class="mx-auto max-w-4xl px-4 pb-32 py-8 sm:px-6 lg:px-8">
             <section class="space-y-8">

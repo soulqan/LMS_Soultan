@@ -23,6 +23,7 @@ class CourseFactory extends Factory
             'description' => fake()->paragraphs(3, true),
             'thumbnail' => null,
             'level' => fake()->randomElement(CourseLevel::cases()),
+            'is_available' => true,
         ];
     }
 }

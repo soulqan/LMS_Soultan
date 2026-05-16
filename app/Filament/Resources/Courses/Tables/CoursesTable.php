@@ -6,6 +6,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 
 class CoursesTable
@@ -14,16 +15,18 @@ class CoursesTable
     {
         return $table
             ->columns([
-                TextColumn::make('category.name')
-                    ->searchable(),
                 TextColumn::make('title')
-                    ->searchable(),
+                ->searchable(),
                 TextColumn::make('slug')
+                ->searchable(),
+                TextColumn::make('category.name')
                     ->searchable(),
                 // TextColumn::make('thumbnail')
                 //     ->searchable(),
                 TextColumn::make('level')
                     ->badge(),
+                ToggleColumn::make('is_available')
+                    ->label('Available'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
