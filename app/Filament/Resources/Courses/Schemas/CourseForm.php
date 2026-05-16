@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Courses\Schemas;
 
 use App\Enums\CourseLevel;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -26,6 +27,23 @@ class CourseForm
                 Select::make('level')
                     ->options(CourseLevel::class)
                     ->required(),
+                Repeater::make('lessons')
+                    ->relationship()
+                    ->orderColumn('order')
+                    ->addActionLabel('Add lesson')
+                    ->reorderableWithButtons()
+                    ->collapsible()
+                    ->collapsed()
+                    ->schema([
+                        TextInput::make('title')
+                            ->required(),
+                        TextInput::make('video_url')
+                            ->label('Video URL')
+                            ->url(),
+                        Textarea::make('content')
+                            ->columnSpanFull(),
+                    ])
+                    ->columnSpanFull(),
             ]);
     }
 }
