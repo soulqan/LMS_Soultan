@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\Lesson;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -58,6 +59,10 @@ class LmsPublicPagesTest extends TestCase
             ->assertSee($course->title);
 
         $this->get(route('lessons.show', [$course, $lesson]))
+            ->assertRedirect(route('login'));
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('lessons.show', [$course, $lesson]))
             ->assertOk()
             ->assertSee($lesson->title);
     }

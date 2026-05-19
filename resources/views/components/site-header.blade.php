@@ -36,7 +36,7 @@
 @endphp
 
 <header class="sticky top-0 z-50 border-b {{ $barClasses }}">
-    <div class="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
+    <div class="mx-auto flex min-h-20 max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
         @if ($backUrl)
             <a href="{{ $backUrl }}" class="inline-flex items-center gap-2 {{ $linkClasses }} transition">
                 <x-app-icon name="chevron-left" class="h-5 w-5" />
@@ -77,15 +77,18 @@
         <div class="hidden items-center gap-3 sm:flex">
             @guest
                 <a href="{{ route('login') }}" class="rounded-xl border px-4 py-2 text-sm font-semibold transition {{ $dark ? 'border-slate-700 text-slate-200 hover:bg-slate-900' : 'border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50' }}">
-                    Login
-                </a>
-                <a href="{{ route('student.register') }}" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700">
-                    Sign Up
+                    Sign In
                 </a>
             @else
-                <a href="{{ route('courses.index') }}" class="rounded-xl border px-4 py-2 text-sm font-semibold transition {{ $dark ? 'border-slate-700 text-slate-200 hover:bg-slate-900' : 'border-slate-200 text-slate-700 hover:border-slate-50 hover:bg-slate-50' }}">
-                    My Courses
+                <a href="{{ route('profile.show') }}" class="rounded-xl border px-4 py-2 text-sm font-semibold transition {{ $dark ? 'border-slate-700 text-slate-200 hover:bg-slate-900' : 'border-slate-200 text-slate-700 hover:border-slate-50 hover:bg-slate-50' }}">
+                    Profile
                 </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
+                        Logout
+                    </button>
+                </form>
             @endguest
         </div>
 
@@ -101,18 +104,17 @@
                     <a href="{{ route('filament.admin.pages.dashboard') }}" class="block px-4 py-3 text-sm transition {{ $menuItemClasses }}">Admin</a>
                 @endif
                 @guest
-                    <a href="{{ route('login') }}" class="block px-4 py-3 text-sm transition {{ $menuItemClasses }}">Login</a>
-                    <a href="{{ route('student.register') }}" class="block px-4 py-3 text-sm transition {{ $menuItemClasses }}">Sign Up</a>
+                    <a href="{{ route('login') }}" class="block px-4 py-3 text-sm transition {{ $menuItemClasses }}">Sign In</a>
                 @else
-                    <a href="{{ route('courses.index') }}" class="block px-4 py-3 text-sm transition {{ $menuItemClasses }}">My Courses</a>
+                    <a href="{{ route('profile.show') }}" class="block px-4 py-3 text-sm transition {{ $menuItemClasses }}">Profile</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="block w-full px-4 py-3 text-left text-sm transition {{ $menuItemClasses }}">
+                            Logout
+                        </button>
+                    </form>
                 @endguest
             </div>
         </div>
     </div>
-
-    @if (! $backUrl && isset($search))
-        <div class="border-t {{ $dark ? 'border-slate-800' : 'border-slate-200' }} px-4 py-4 md:hidden">
-            {{ $search }}
-        </div>
-    @endif
 </header>

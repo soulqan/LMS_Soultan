@@ -13,6 +13,7 @@ class AdminUserSeeder extends Seeder
             ['email' => 'test@example.com'],
             [
                 'name' => 'Test User',
+                'role' => User::ROLE_STUDENT,
                 'password' => 'password',
             ]
         );
@@ -21,6 +22,7 @@ class AdminUserSeeder extends Seeder
             ['email' => 'admin@learninghub.test'],
             [
                 'name' => 'LearningHub Admin',
+                'role' => User::ROLE_ADMIN,
                 'password' => 'password',
             ]
         );

@@ -45,7 +45,7 @@
                 </form>
 
                 <div class="mt-6 flex items-center justify-between text-sm">
-                    <a href="{{ route('student.register') }}" class="font-medium text-blue-600 hover:text-blue-700">Create an account</a>
+                    <a href="{{ route('student.register') }}" class="font-medium text-blue-600 hover:text-blue-700">Register</a>
                     <a href="{{ url('/admin/forgot-password') }}" class="font-medium text-slate-600 hover:text-slate-900">Forgot password?</a>
                 </div>
             </div>
