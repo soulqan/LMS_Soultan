@@ -54,10 +54,20 @@
             </section>
 
             <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-                <div class="grid gap-8 lg:grid-cols-[256px_minmax(0,1fr)]">
-                    <aside class="sticky top-24 h-fit rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div class="space-y-4 lg:hidden">
+                    <button
+                        type="button"
+                        data-filter-toggle
+                        aria-expanded="false"
+                        class="inline-flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-900 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        <span>Filters</span>
+                        <span class="text-slate-500">Search, category, level</span>
+                    </button>
+
+                    <div data-filter-panel class="hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                         <div class="space-y-6">
-                            <div class="md:hidden">
+                            <div>
                                 <label for="mobile-search" class="mb-2 block text-sm font-semibold text-slate-700">Search courses</label>
                                 <div class="relative">
                                     <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-400">
@@ -73,6 +83,50 @@
                                 </div>
                             </div>
 
+                            <div>
+                                <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Categories</h2>
+                                <div class="mt-4 space-y-2">
+                                    <button type="button" data-category-button="all" class="w-full rounded-xl bg-blue-50 px-4 py-3 text-left text-sm font-semibold text-blue-600 transition hover:bg-blue-100">
+                                        All
+                                    </button>
+                                    @foreach ($categories as $category)
+                                        <button
+                                            type="button"
+                                            data-category-button="{{ $category->slug }}"
+                                            class="w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                                        >
+                                            <span class="flex items-center justify-between gap-3">
+                                                <span>{{ $category->name }}</span>
+                                                <span class="text-xs text-slate-500">{{ $category->courses_count }}</span>
+                                            </span>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <div>
+                                <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Level</h2>
+                                <div class="mt-4 space-y-3">
+                                    @foreach ($filters['levels'] as $value => $label)
+                                        <label class="flex items-center gap-3 rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700">
+                                            <input
+                                                type="checkbox"
+                                                value="{{ $value }}"
+                                                data-level-filter
+                                                class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                            >
+                                            <span>{{ $label }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid gap-8 lg:grid-cols-[256px_minmax(0,1fr)]">
+                    <aside class="sticky top-24 hidden h-fit rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:block">
+                        <div class="space-y-6">
                             <div>
                                 <h2 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Categories</h2>
                                 <div class="mt-4 space-y-2">

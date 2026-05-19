@@ -15,7 +15,6 @@ class HomeController extends Controller
         $categories = Category::query()
             ->withCount(['courses' => fn ($query) => $query->where('is_available', true)])
             ->orderBy('name')
-            ->take(4)
             ->get();
 
         $featuredCourses = Course::query()
@@ -24,14 +23,32 @@ class HomeController extends Controller
             ->latest()
             ->get();
 
-        $featuredCourses = $featuredCourses->take(3)->map(fn (Course $course) => [
-            'course' => $course,
-            'meta' => $content->courseCardMeta($course),
-        ]);
+        $categorySpotlights = $categories
+            ->map(function (Category $category) use ($content) {
+                $course = Course::query()
+                    ->with(['category', 'lessons'])
+                    ->where('is_available', true)
+                    ->where('category_id', $category->id)
+                    ->latest()
+                    ->first();
+
+                if (! $course) {
+                    return null;
+                }
+
+                return [
+                    'category' => $category,
+                    'course' => $course,
+                    'meta' => $content->courseCardMeta($course),
+                ];
+            })
+            ->filter()
+            ->values();
 
         return view('home', [
             'categories' => $categories,
             'featuredCourses' => $featuredCourses,
+            'categorySpotlights' => $categorySpotlights,
             'stats' => [
                 'courses' => Course::query()->where('is_available', true)->count(),
                 'lessons' => Lesson::query()

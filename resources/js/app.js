@@ -1,9 +1,38 @@
 document.addEventListener('DOMContentLoaded', () => {
     initCatalogFilters();
+    initCatalogMobileFilters();
     initProfileDropdown();
     initMobileMenus();
+    initHomeSpotlight();
     initPlayerState();
 });
+
+function initCatalogMobileFilters() {
+    const toggle = document.querySelector('[data-filter-toggle]');
+    const panel = document.querySelector('[data-filter-panel]');
+
+    if (!toggle || !panel) {
+        return;
+    }
+
+    const closePanel = () => {
+        panel.classList.add('hidden');
+        toggle.setAttribute('aria-expanded', 'false');
+    };
+
+    toggle.setAttribute('aria-expanded', 'false');
+
+    toggle.addEventListener('click', (event) => {
+        event.stopPropagation();
+
+        const isHidden = panel.classList.contains('hidden');
+        panel.classList.toggle('hidden', !isHidden);
+        toggle.setAttribute('aria-expanded', String(isHidden));
+    });
+
+    panel.addEventListener('click', (event) => event.stopPropagation());
+    document.addEventListener('click', closePanel);
+}
 
 function initCatalogFilters() {
     const catalogPage = document.querySelector('[data-catalog-page]');
@@ -78,30 +107,46 @@ function initCatalogFilters() {
 }
 
 function initProfileDropdown() {
-    const toggle = document.querySelector('[data-profile-toggle]');
-    const menu = document.querySelector('[data-profile-menu]');
+    const toggles = [...document.querySelectorAll('[data-profile-toggle]')];
 
-    if (!toggle || !menu) {
+    if (toggles.length === 0) {
         return;
     }
 
-    const closeMenu = () => {
-        menu.classList.add('hidden');
-        toggle.setAttribute('aria-expanded', 'false');
+    const closeMenus = () => {
+        toggles.forEach((toggle) => {
+            const menu = toggle.parentElement?.querySelector('[data-profile-menu]');
+
+            if (menu) {
+                menu.classList.add('hidden');
+            }
+
+            toggle.setAttribute('aria-expanded', 'false');
+        });
     };
 
-    toggle.setAttribute('aria-expanded', 'false');
+    toggles.forEach((toggle) => {
+        const menu = toggle.parentElement?.querySelector('[data-profile-menu]');
 
-    toggle.addEventListener('click', (event) => {
-        event.stopPropagation();
+        if (!menu) {
+            return;
+        }
 
-        const isHidden = menu.classList.contains('hidden');
-        menu.classList.toggle('hidden', !isHidden);
-        toggle.setAttribute('aria-expanded', String(isHidden));
+        toggle.setAttribute('aria-expanded', 'false');
+
+        toggle.addEventListener('click', (event) => {
+            event.stopPropagation();
+
+            const isHidden = menu.classList.contains('hidden');
+            closeMenus();
+            menu.classList.toggle('hidden', !isHidden);
+            toggle.setAttribute('aria-expanded', String(isHidden));
+        });
+
+        menu.addEventListener('click', (event) => event.stopPropagation());
     });
 
-    document.addEventListener('click', closeMenu);
-    menu.addEventListener('click', (event) => event.stopPropagation());
+    document.addEventListener('click', closeMenus);
 }
 
 function initMobileMenus() {
@@ -143,6 +188,80 @@ function initMobileMenus() {
     });
 
     document.addEventListener('click', closeMenus);
+}
+
+function initHomeSpotlight() {
+    const spotlight = document.querySelector('[data-home-spotlight]');
+
+    if (!spotlight) {
+        return;
+    }
+
+    const items = [...spotlight.querySelectorAll('[data-home-spotlight-item]')];
+    const tabs = [...spotlight.querySelectorAll('[data-home-spotlight-tab]')];
+    const interval = Number(spotlight.dataset.homeSpotlightInterval ?? 5500);
+
+    if (items.length === 0) {
+        return;
+    }
+
+    let currentIndex = 0;
+    let timer = null;
+
+    const setActive = (index) => {
+        currentIndex = index;
+
+        items.forEach((item, itemIndex) => {
+            const isActive = itemIndex === index;
+            item.classList.toggle('opacity-100', isActive);
+            item.classList.toggle('opacity-0', !isActive);
+            item.classList.toggle('pointer-events-none', !isActive);
+        });
+
+        tabs.forEach((tab, tabIndex) => {
+            const isActive = tabIndex === index;
+            tab.classList.toggle('ring-2', isActive);
+            tab.classList.toggle('ring-blue-500', isActive);
+            tab.classList.toggle('bg-blue-50', isActive);
+            tab.classList.toggle('border-blue-200', isActive);
+            tab.classList.toggle('bg-white', !isActive);
+        });
+    };
+
+    const start = () => {
+        timer = window.setInterval(() => {
+            setActive((currentIndex + 1) % items.length);
+        }, interval);
+    };
+
+    const restart = () => {
+        if (timer) {
+            window.clearInterval(timer);
+        }
+
+        start();
+    };
+
+    tabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+            const index = Number(tab.dataset.homeSpotlightIndex ?? 0);
+            setActive(index);
+            restart();
+        });
+    });
+
+    spotlight.addEventListener('mouseenter', () => {
+        if (timer) {
+            window.clearInterval(timer);
+        }
+    });
+
+    spotlight.addEventListener('mouseleave', () => {
+        restart();
+    });
+
+    setActive(0);
+    start();
 }
 
 function initPlayerState() {
