@@ -33,6 +33,14 @@ class LmsPublicPagesTest extends TestCase
             ->assertDontSee($hiddenCourse->title);
     }
 
+    public function test_logged_in_users_do_not_see_homepage_sign_in_cta(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get('/')
+            ->assertOk()
+            ->assertDontSee('Sign In');
+    }
+
     public function test_it_renders_the_course_catalog(): void
     {
         $category = Category::factory()->create();

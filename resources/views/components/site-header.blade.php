@@ -7,6 +7,7 @@
 ])
 
 @php
+    $authUser = auth()->user();
     $canAccessAdmin = auth()->check();
 
     if ($canAccessAdmin && class_exists(\Filament\Facades\Filament::class)) {
@@ -33,6 +34,9 @@
     $menuItemClasses = $dark
         ? 'text-slate-300 hover:bg-slate-800 hover:text-white'
         : 'text-slate-700 hover:bg-slate-50';
+    $accountButtonClasses = $dark
+        ? 'border-slate-800 bg-slate-900 text-white hover:bg-slate-800'
+        : 'border-slate-200 bg-white text-slate-900 hover:bg-slate-50';
 @endphp
 
 <header class="sticky top-0 z-50 border-b {{ $barClasses }}">
@@ -80,15 +84,33 @@
                     Sign In
                 </a>
             @else
-                <a href="{{ route('profile.show') }}" class="rounded-xl border px-4 py-2 text-sm font-semibold transition {{ $dark ? 'border-slate-700 text-slate-200 hover:bg-slate-900' : 'border-slate-200 text-slate-700 hover:border-slate-50 hover:bg-slate-50' }}">
-                    Profile
-                </a>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50">
-                        Logout
+                <div class="relative">
+                    <button
+                        type="button"
+                        data-profile-toggle
+                        class="flex min-w-[14rem] max-w-[18rem] items-center gap-3 rounded-xl border px-3 py-2 text-left text-sm font-medium transition {{ $accountButtonClasses }}"
+                    >
+                        <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-semibold text-white">
+                            {{ strtoupper(mb_substr($authUser->name, 0, 1)) }}
+                        </span>
+                        <span class="min-w-0 flex-1">
+                            <span class="block truncate font-semibold">{{ $authUser->name }}</span>
+                            <span class="block truncate text-xs {{ $dark ? 'text-slate-400' : 'text-slate-500' }}">{{ $authUser->email }}</span>
+                        </span>
+                        <x-app-icon name="chevron-down" class="h-4 w-4 shrink-0 opacity-80" />
+                        <span class="sr-only">Open profile menu</span>
                     </button>
-                </form>
+
+                    <div data-profile-menu class="absolute right-0 mt-3 hidden w-56 overflow-hidden rounded-xl border {{ $menuClasses }}">
+                        <a href="{{ route('profile.show') }}" class="block px-4 py-3 text-sm transition {{ $menuItemClasses }}">Profile</a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="block w-full px-4 py-3 text-left text-sm transition {{ $menuItemClasses }}">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
             @endguest
         </div>
 
@@ -106,6 +128,10 @@
                 @guest
                     <a href="{{ route('login') }}" class="block px-4 py-3 text-sm transition {{ $menuItemClasses }}">Sign In</a>
                 @else
+                    <div class="border-b {{ $dark ? 'border-slate-800' : 'border-slate-200' }} px-4 py-3">
+                        <p class="truncate text-sm font-semibold {{ $dark ? 'text-white' : 'text-slate-900' }}">{{ $authUser->name }}</p>
+                        <p class="truncate text-xs {{ $dark ? 'text-slate-400' : 'text-slate-500' }}">{{ $authUser->email }}</p>
+                    </div>
                     <a href="{{ route('profile.show') }}" class="block px-4 py-3 text-sm transition {{ $menuItemClasses }}">Profile</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

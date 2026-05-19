@@ -34,20 +34,22 @@
                             <a href="{{ route('home') }}" class="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-blue-700 transition hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-white/70">
                                 Back to Landing Page
                             </a>
+                            @guest
                             <a href="{{ route('student.register') }}" class="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/70">
                                 Create Account
                             </a>
+                            @endguest
                         </div>
                     </div>
 
-                    <div class="grid gap-4 sm:grid-cols-3">
+                    {{-- <div class="grid gap-4 sm:grid-cols-3">
                         @foreach ($categories->take(3) as $category)
                             <div class="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur">
                                 <p class="text-3xl font-semibold text-white">{{ $category->courses_count }}</p>
                                 <p class="mt-1 text-sm text-blue-50">{{ $category->name }}</p>
                             </div>
                         @endforeach
-                    </div>
+                    </div> --}}
                 </div>
             </section>
 
