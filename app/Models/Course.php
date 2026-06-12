@@ -24,6 +24,15 @@ class Course extends Model
         'thumbnail',
         'level',
         'is_available',
+        'subtitle',
+        'rating',
+        'enrolled_count',
+        'duration',
+        'price',
+        'about',
+        'what_you_will_learn',
+        'instructor_name',
+        'instructor_bio',
     ];
 
     protected function casts(): array
@@ -31,6 +40,9 @@ class Course extends Model
         return [
             'level' => CourseLevel::class,
             'is_available' => 'boolean',
+            'what_you_will_learn' => 'array',
+            'rating' => 'float',
+            'price' => 'float',
         ];
     }
 
@@ -42,6 +54,33 @@ class Course extends Model
     public function lessons(): HasMany
     {
         return $this->hasMany(Lesson::class)->orderBy('order');
+    }
+
+    public function students()
+    {
+        return $this->belongsToMany(User::class)->withTimestamps();
+    }
+
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class);
+    }
+
+    public function formattedDuration(): string
+    {
+        $minutes = $this->lessons->sum('duration_minutes') ?: 0;
+        if ($minutes === 0) {
+            return '0m';
+        }
+        
+        $hours = floor($minutes / 60);
+        $remainingMinutes = $minutes % 60;
+        
+        if ($hours > 0) {
+            return $remainingMinutes > 0 ? "{$hours}h {$remainingMinutes}m" : "{$hours}h";
+        }
+        
+        return "{$remainingMinutes}m";
     }
 
     public function getRouteKeyName(): string
@@ -69,5 +108,18 @@ class Course extends Model
                 $course->slug = app(SlugService::class)->unique($course->title, 'courses', $course->getOriginal('slug'));
             }
         });
+    }
+
+    public function isFinishedBy(User $user): bool
+    {
+        $totalLessons = $this->lessons()->count();
+        if ($totalLessons === 0) {
+            return false;
+        }
+
+        $lessonIds = $this->lessons()->pluck('id');
+        $completedCount = $user->completedLessons()->whereIn('lesson_id', $lessonIds)->count();
+
+        return $completedCount === $totalLessons;
     }
 }

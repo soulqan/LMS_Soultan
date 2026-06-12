@@ -39,7 +39,7 @@
         : 'border-slate-200 bg-white text-slate-900 hover:bg-slate-50';
 @endphp
 
-<header class="sticky top-0 z-50 border-b {{ $barClasses }}">
+<header class="fixed top-0 left-0 right-0 z-50 border-b {{ $barClasses }}">
     <div class="mx-auto flex min-h-20 max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
         @if ($backUrl)
             <a href="{{ $backUrl }}" class="inline-flex items-center gap-2 {{ $linkClasses }} transition">
@@ -155,3 +155,4 @@
         </div>
     </div>
 </header>
+<div class="h-20"></div>

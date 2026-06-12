@@ -83,6 +83,7 @@ class LearningHubContent
                         return [
                             'id' => $lesson->id,
                             'title' => $lesson->title,
+                            'slug' => $lesson->slug,
                             'duration' => $durations[$durationIndex] ?? '18:00',
                             'completed' => $lesson->order <= 2,
                             'video_url' => $lesson->video_url,

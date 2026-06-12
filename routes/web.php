@@ -24,10 +24,13 @@ Route::middleware('auth')->group(function () {
     Route::match(['post', 'get'], '/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.show');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/courses/{course:slug}/enroll', [CourseController::class, 'enroll'])->name('courses.enroll');
+    Route::post('/courses/{course:slug}/rate', [CourseController::class, 'rate'])->name('courses.rate');
 });
 
 Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
 Route::get('/courses/{course:slug}', [CourseController::class, 'show'])->name('courses.show');
+Route::patch('/courses/{course:slug}', [CourseController::class, 'update'])->middleware('auth')->name('courses.update');
 
 Route::get('/course/{course:slug}', [CourseController::class, 'show'])->name('course.show');
 
@@ -37,4 +40,13 @@ Route::middleware('auth')->scopeBindings()->group(function () {
 
     Route::get('/course/{course:slug}/player/{lesson:slug}', [LessonController::class, 'show'])
         ->name('course.player');
+
+    Route::post('/courses/{course:slug}/lessons/{lesson:slug}/complete', [LessonController::class, 'complete'])
+        ->name('lessons.complete');
+
+    Route::post('/courses/{course:slug}/lessons/{lesson:slug}/quiz', [LessonController::class, 'submitQuiz'])
+        ->name('lessons.quiz');
+
+    Route::patch('/courses/{course:slug}/lessons/{lesson:slug}', [LessonController::class, 'update'])
+        ->name('lessons.update');
 });

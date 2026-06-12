@@ -52,4 +52,14 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->role === self::ROLE_STUDENT;
     }
+
+    public function enrolledCourses()
+    {
+        return $this->belongsToMany(Course::class)->withTimestamps();
+    }
+
+    public function completedLessons()
+    {
+        return $this->belongsToMany(Lesson::class)->withTimestamps();
+    }
 }

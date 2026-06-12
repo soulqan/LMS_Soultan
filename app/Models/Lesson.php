@@ -21,18 +21,33 @@ class Lesson extends Model
         'video_url',
         'content',
         'order',
+        'duration_minutes',
+        'type',
+        'quiz_question',
+        'quiz_options',
+        'quiz_correct_option',
+        'module_content',
     ];
 
     protected function casts(): array
     {
         return [
             'order' => 'integer',
+            'duration_minutes' => 'integer',
+            'quiz_options' => 'array',
+            'quiz_correct_option' => 'integer',
+            'module_content' => 'array',
         ];
     }
 
     public function course(): BelongsTo
     {
         return $this->belongsTo(Course::class);
+    }
+
+    public function completedBy()
+    {
+        return $this->belongsToMany(User::class)->withTimestamps();
     }
 
     public function getRouteKeyName(): string
