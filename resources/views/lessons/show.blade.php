@@ -130,7 +130,7 @@
                         </div>
 
                         <!-- Mark Complete Button (hide for Quiz since it requires passing the quiz) -->
-                        @if ($lesson->type !== 'quiz')
+                        @if ($lesson->type === 'video' || $lesson->type === 'quiz')
                             <button
                                 type="button"
                                 data-mark-complete
@@ -304,7 +304,24 @@
 
                     <div class="mt-8 pt-6 border-t border-slate-800 space-y-6">
                         <div class="space-y-3">
-                            <h3 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">About This Lesson</h3>
+                            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <h3 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-450">About This Lesson</h3>
+                                @if ($lesson->type === 'module')
+                                    <button
+                                        type="button"
+                                        data-mark-complete
+                                        data-complete-url="{{ route('lessons.complete', [$course, $lesson]) }}"
+                                        @class([
+                                            'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500',
+                                            'bg-green-600 hover:bg-green-700' => $isCompleted,
+                                            'bg-blue-600 hover:bg-blue-700' => !$isCompleted,
+                                        ])
+                                    >
+                                        <x-app-icon name="check-circle" class="h-4 w-4" />
+                                        <span data-complete-text>{{ $isCompleted ? 'Completed' : 'Mark as Complete' }}</span>
+                                    </button>
+                                @endif
+                            </div>
                             <p class="text-sm leading-relaxed text-slate-300 view-element">{{ $lesson->content }}</p>
                             @if (auth()->check() && auth()->user()->isAdmin())
                                 <div class="edit-element hidden">
@@ -326,6 +343,31 @@
                                 @endforeach
                             </div>
                         </div>
+
+                        <!-- Navigation Buttons -->
+                        <div class="flex items-center justify-between pt-6 border-t border-slate-800/60">
+                            @if ($previousLesson)
+                                <a
+                                    href="{{ route('course.player', [$course, $previousLesson]) }}"
+                                    class="inline-flex items-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-200 transition-colors"
+                                >
+                                    <x-app-icon name="chevron-left" class="h-4 w-4" />
+                                    <span>Previous Lesson</span>
+                                </a>
+                            @else
+                                <div></div>
+                            @endif
+
+                            @if ($nextLesson && (auth()->user()?->isAdmin() || $isCompleted))
+                                <a
+                                    href="{{ route('course.player', [$course, $nextLesson]) }}"
+                                    class="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors"
+                                >
+                                    <span>Next Lesson</span>
+                                    <x-app-icon name="chevron-right" class="h-4 w-4" />
+                                </a>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </section>
@@ -345,20 +387,30 @@
 
                                 <div class="space-y-1 p-2">
                                     @foreach ($chapter['lessons'] as $item)
+                                        @php
+                                            $isLocked = !auth()->user()?->isAdmin() && !empty($item['locked']);
+                                        @endphp
                                         <a
-                                            href="{{ route('course.player', [$course, $item['slug']]) }}"
+                                            @if (!$isLocked)
+                                                href="{{ route('course.player', [$course, $item['slug']]) }}"
+                                            @endif
                                             data-lesson-button
                                             data-lesson-id="{{ $item['id'] }}"
                                             data-lesson-completed="{{ $item['completed'] ? '1' : '0' }}"
+                                            data-lesson-locked="{{ $isLocked ? '1' : '0' }}"
                                             @class([
-                                                'flex w-full items-start justify-between gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500',
+                                                'flex w-full items-start justify-between gap-3 rounded-xl px-3 py-3 text-left transition focus:outline-none focus:ring-2 focus:ring-blue-500',
                                                 'bg-blue-600/10' => $item['id'] === $lesson->id,
+                                                'hover:bg-slate-800 cursor-pointer' => !$isLocked,
+                                                'opacity-50 cursor-not-allowed pointer-events-none' => $isLocked,
                                             ])
                                         >
                                             <div class="flex items-start gap-3">
                                                 <span data-lesson-icon class="mt-0.5 text-green-500">
                                                     @if ($item['completed'])
                                                         <x-app-icon name="check-circle" class="h-5 w-5" />
+                                                    @elseif ($isLocked)
+                                                        <x-app-icon name="lock" class="h-5 w-5 text-slate-500" />
                                                     @else
                                                         <x-app-icon name="circle" class="h-5 w-5 text-slate-650" />
                                                     @endif

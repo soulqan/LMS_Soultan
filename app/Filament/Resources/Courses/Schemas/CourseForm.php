@@ -63,6 +63,10 @@ class CourseForm
                     ->schema([
                         TextInput::make('title')
                             ->required(),
+                        TextInput::make('chapter_title')
+                            ->label('Chapter / Section')
+                            ->required()
+                            ->default('Getting Started'),
                         Select::make('type')
                             ->options([
                                 'video' => 'Video',

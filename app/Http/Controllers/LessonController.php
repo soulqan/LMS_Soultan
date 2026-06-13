@@ -11,7 +11,7 @@ use Illuminate\View\View;
 
 class LessonController extends Controller
 {
-    public function show(Course $course, Lesson $lesson, LearningHubContent $content): View
+    public function show(Course $course, Lesson $lesson, LearningHubContent $content): View|RedirectResponse
     {
         abort_unless($lesson->course_id === $course->id, 404);
 
@@ -27,11 +27,30 @@ class LessonController extends Controller
         $user = auth()->user();
         $completedLessonIds = $user ? $user->completedLessons()->whereIn('lesson_id', $lessons->pluck('id'))->pluck('lesson_id')->toArray() : [];
 
-        // Map db completion status onto sidebar structure
+        // Determine the sequence: find the first uncompleted lesson
+        $firstUncompletedIndex = null;
+        foreach ($lessons as $index => $item) {
+            if (!in_array($item->id, $completedLessonIds)) {
+                $firstUncompletedIndex = $index;
+                break;
+            }
+        }
+
+        // Redirect to the first uncompleted lesson if they try to access a locked lesson
+        $isAdmin = $user && $user->isAdmin();
+        if (!$isAdmin && $firstUncompletedIndex !== null && $currentIndex > $firstUncompletedIndex) {
+            $unlockedLesson = $lessons[$firstUncompletedIndex];
+            return redirect()->route('course.player', [$course, $unlockedLesson->slug])
+                ->withErrors(['sequence' => 'You must complete the previous lessons first.']);
+        }
+
+        // Map db completion and locked status onto sidebar structure
         if (isset($player['chapters'])) {
             foreach ($player['chapters'] as &$chapter) {
                 foreach ($chapter['lessons'] as &$item) {
                     $item['completed'] = in_array($item['id'], $completedLessonIds);
+                    $itemIndex = $lessons->search(fn (Lesson $l) => $l->id === $item['id']);
+                    $item['locked'] = ($firstUncompletedIndex !== null && $itemIndex > $firstUncompletedIndex);
                 }
             }
         }
@@ -56,6 +75,23 @@ class LessonController extends Controller
             return response()->json(['error' => 'Not enrolled'], 403);
         }
 
+        $lessons = $course->lessons()->orderBy('order')->get();
+        $completedLessonIds = $user->completedLessons()->whereIn('lesson_id', $lessons->pluck('id'))->pluck('lesson_id')->toArray();
+
+        $firstUncompletedIndex = null;
+        foreach ($lessons as $index => $item) {
+            if (!in_array($item->id, $completedLessonIds)) {
+                $firstUncompletedIndex = $index;
+                break;
+            }
+        }
+
+        $currentIndex = $lessons->search(fn (Lesson $item) => $item->id === $lesson->id);
+
+        if (!$user->isAdmin() && $firstUncompletedIndex !== null && $currentIndex > $firstUncompletedIndex) {
+            return response()->json(['error' => 'You must complete the previous lessons first.'], 400);
+        }
+
         $user->completedLessons()->syncWithoutDetaching([$lesson->id]);
 
         $courseFinished = $course->isFinishedBy($user);
@@ -75,22 +111,40 @@ class LessonController extends Controller
                 ->withErrors(['quiz' => 'You must be enrolled to submit quizzes.']);
         }
 
+        $lessons = $course->lessons()->orderBy('order')->get();
+        $completedLessonIds = $user->completedLessons()->whereIn('lesson_id', $lessons->pluck('id'))->pluck('lesson_id')->toArray();
+
+        $firstUncompletedIndex = null;
+        foreach ($lessons as $index => $item) {
+            if (!in_array($item->id, $completedLessonIds)) {
+                $firstUncompletedIndex = $index;
+                break;
+            }
+        }
+
+        $currentIndex = $lessons->search(fn (Lesson $item) => $item->id === $lesson->id);
+
+        if (!$user->isAdmin() && $firstUncompletedIndex !== null && $currentIndex > $firstUncompletedIndex) {
+            return redirect()->route('course.player', [$course, $lessons[$firstUncompletedIndex]->slug])
+                ->withErrors(['sequence' => 'You must complete the previous lessons first.']);
+        }
+
         $validated = $request->validate([
             'answer' => 'required|integer|min:0|max:3',
         ]);
 
+        $user->completedLessons()->syncWithoutDetaching([$lesson->id]);
+
         $isCorrect = (int) $validated['answer'] === (int) $lesson->quiz_correct_option;
 
         if ($isCorrect) {
-            $user->completedLessons()->syncWithoutDetaching([$lesson->id]);
-            
             return redirect()->route('course.player', [$course, $lesson])
                 ->with('status', 'Correct! That is the right answer.')
                 ->with('quiz_result', 'correct');
         }
 
         return redirect()->route('course.player', [$course, $lesson])
-            ->withErrors(['quiz' => 'Incorrect answer. Please try again!'])
+            ->with('status', 'Submitted! The lesson is marked as complete.')
             ->with('quiz_result', 'incorrect');
     }
 

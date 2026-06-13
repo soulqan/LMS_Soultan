@@ -79,7 +79,7 @@ class LessonExecutionTest extends TestCase
         $this->assertTrue($student->completedLessons()->where('lesson_id', $lesson->id)->exists());
     }
 
-    public function test_quiz_lesson_incorrect_answer_does_not_mark_it_complete(): void
+    public function test_quiz_lesson_incorrect_answer_marks_it_complete(): void
     {
         $student = User::factory()->create(['role' => User::ROLE_STUDENT]);
         $course = Course::factory()->create();
@@ -99,10 +99,10 @@ class LessonExecutionTest extends TestCase
                 'answer' => 0,
             ])
             ->assertRedirect(route('course.player', [$course, $lesson]))
-            ->assertSessionHasErrors(['quiz'])
+            ->assertSessionHas('status', 'Submitted! The lesson is marked as complete.')
             ->assertSessionHas('quiz_result', 'incorrect');
 
-        $this->assertFalse($student->completedLessons()->where('lesson_id', $lesson->id)->exists());
+        $this->assertTrue($student->completedLessons()->where('lesson_id', $lesson->id)->exists());
     }
 
     public function test_rating_widget_only_visible_for_completed_course(): void
@@ -319,5 +319,148 @@ class LessonExecutionTest extends TestCase
                 'module_content' => $invalidModuleContent,
             ])
             ->assertSessionHasErrors(['module_content.0.title']);
+    }
+
+    public function test_student_cannot_access_locked_lesson_redirects_to_first_uncompleted_lesson(): void
+    {
+        $student = User::factory()->create(['role' => User::ROLE_STUDENT]);
+        $course = Course::factory()->create();
+        $course->students()->attach($student->id);
+
+        $lesson1 = Lesson::factory()->create(['course_id' => $course->id, 'order' => 1, 'slug' => 'lesson-1']);
+        $lesson2 = Lesson::factory()->create(['course_id' => $course->id, 'order' => 2, 'slug' => 'lesson-2']);
+
+        // lesson1 is not completed, so lesson2 is locked.
+        $this->actingAs($student)
+            ->get(route('course.player', [$course, $lesson2]))
+            ->assertRedirect(route('course.player', [$course, $lesson1]))
+            ->assertSessionHasErrors(['sequence']);
+    }
+
+    public function test_student_cannot_complete_locked_lesson(): void
+    {
+        $student = User::factory()->create(['role' => User::ROLE_STUDENT]);
+        $course = Course::factory()->create();
+        $course->students()->attach($student->id);
+
+        $lesson1 = Lesson::factory()->create(['course_id' => $course->id, 'order' => 1]);
+        $lesson2 = Lesson::factory()->create(['course_id' => $course->id, 'order' => 2]);
+
+        $this->actingAs($student)
+            ->post(route('lessons.complete', [$course, $lesson2]))
+            ->assertStatus(400)
+            ->assertJson(['error' => 'You must complete the previous lessons first.']);
+
+        $this->assertFalse($student->completedLessons()->where('lesson_id', $lesson2->id)->exists());
+    }
+
+    public function test_student_cannot_submit_quiz_on_locked_lesson(): void
+    {
+        $student = User::factory()->create(['role' => User::ROLE_STUDENT]);
+        $course = Course::factory()->create();
+        $course->students()->attach($student->id);
+
+        $lesson1 = Lesson::factory()->create(['course_id' => $course->id, 'order' => 1]);
+        $lesson2 = Lesson::factory()->create([
+            'course_id' => $course->id,
+            'type' => 'quiz',
+            'quiz_question' => 'Select 2.',
+            'quiz_options' => ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
+            'quiz_correct_option' => 1,
+            'order' => 2,
+        ]);
+
+        $this->actingAs($student)
+            ->post(route('lessons.quiz', [$course, $lesson2]), [
+                'answer' => 1,
+            ])
+            ->assertRedirect(route('course.player', [$course, $lesson1]))
+            ->assertSessionHasErrors(['sequence']);
+
+        $this->assertFalse($student->completedLessons()->where('lesson_id', $lesson2->id)->exists());
+    }
+
+    public function test_admin_can_access_and_complete_lessons_out_of_sequence(): void
+    {
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $course = Course::factory()->create();
+        $course->students()->attach($admin->id);
+
+        $lesson1 = Lesson::factory()->create(['course_id' => $course->id, 'order' => 1]);
+        $lesson2 = Lesson::factory()->create(['course_id' => $course->id, 'order' => 2]);
+
+        // Admin can view locked lesson2
+        $this->actingAs($admin)
+            ->get(route('course.player', [$course, $lesson2]))
+            ->assertOk();
+
+        // Admin can complete locked lesson2
+        $this->actingAs($admin)
+            ->post(route('lessons.complete', [$course, $lesson2]))
+            ->assertOk()
+            ->assertJson([
+                'completed' => true,
+            ]);
+
+        $this->assertTrue($admin->completedLessons()->where('lesson_id', $lesson2->id)->exists());
+    }
+
+    public function test_lesson_navigation_buttons_visibility(): void
+    {
+        $student = User::factory()->create(['role' => User::ROLE_STUDENT]);
+        $course = Course::factory()->create();
+        $course->students()->attach($student->id);
+
+        $lesson1 = Lesson::factory()->create(['course_id' => $course->id, 'order' => 1, 'title' => 'First Lesson']);
+        $lesson2 = Lesson::factory()->create(['course_id' => $course->id, 'order' => 2, 'title' => 'Second Lesson']);
+
+        // 1. Viewing first lesson when not completed:
+        // - Previous Lesson should NOT be visible.
+        // - Next Lesson should NOT be visible.
+        $this->actingAs($student)
+            ->get(route('course.player', [$course, $lesson1]))
+            ->assertOk()
+            ->assertDontSee('Previous Lesson')
+            ->assertDontSee('Next Lesson');
+
+        // 2. Mark first lesson as completed.
+        $student->completedLessons()->attach($lesson1->id);
+
+        // 3. Viewing first lesson when completed:
+        // - Previous Lesson should NOT be visible.
+        // - Next Lesson should be visible.
+        $this->actingAs($student)
+            ->get(route('course.player', [$course, $lesson1]))
+            ->assertOk()
+            ->assertDontSee('Previous Lesson')
+            ->assertSee('Next Lesson');
+
+        // 4. Viewing second lesson when first lesson is completed but second is not:
+        // - Previous Lesson should be visible.
+        // - Next Lesson should NOT be visible.
+        $this->actingAs($student)
+            ->get(route('course.player', [$course, $lesson2]))
+            ->assertOk()
+            ->assertSee('Previous Lesson')
+            ->assertDontSee('Next Lesson');
+    }
+
+    public function test_lesson_chapter_title_grouping_rendering(): void
+    {
+        $student = User::factory()->create(['role' => User::ROLE_STUDENT]);
+        $course = Course::factory()->create();
+        $course->students()->attach($student->id);
+
+        $lesson = Lesson::factory()->create([
+            'course_id' => $course->id,
+            'title' => 'Main Title',
+            'chapter_title' => 'My Custom Section Title',
+            'order' => 1,
+        ]);
+
+        $this->actingAs($student)
+            ->get(route('course.player', [$course, $lesson]))
+            ->assertOk()
+            ->assertSee('My Custom Section Title');
     }
 }

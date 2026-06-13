@@ -33,6 +33,7 @@ class Course extends Model
         'what_you_will_learn',
         'instructor_name',
         'instructor_bio',
+        'chapters',
     ];
 
     protected function casts(): array
@@ -43,6 +44,7 @@ class Course extends Model
             'what_you_will_learn' => 'array',
             'rating' => 'float',
             'price' => 'float',
+            'chapters' => 'array',
         ];
     }
 

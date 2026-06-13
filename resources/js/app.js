@@ -321,15 +321,20 @@ function initPlayerState() {
         lessonButtons.forEach((button) => {
             const isActive = Number(button.dataset.lessonId) === Number(currentLessonId);
             const isCompleted = completed.has(Number(button.dataset.lessonId));
+            const isLocked = button.dataset.lessonLocked === '1';
             const icon = button.querySelector('[data-lesson-icon]');
 
             button.classList.toggle('bg-blue-600/10', isActive);
             button.classList.toggle('text-white', isActive);
 
             if (icon) {
-                icon.innerHTML = isCompleted
-                    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><circle cx="12" cy="12" r="9"></circle><path d="m9 12 2 2 4-4"></path></svg>`
-                    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-slate-500"><circle cx="12" cy="12" r="9"></circle></svg>`;
+                if (isCompleted) {
+                    icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"><circle cx="12" cy="12" r="9"></circle><path d="m9 12 2 2 4-4"></path></svg>`;
+                } else if (isLocked) {
+                    icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-slate-500"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`;
+                } else {
+                    icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 text-slate-650"><circle cx="12" cy="12" r="9"></circle></svg>`;
+                }
             }
         });
     };

@@ -58,12 +58,6 @@ class LearningHubContent
     public function playerMeta(Course $course, Collection $lessons): array
     {
         $meta = $this->metaFor($course);
-        $chapterNames = [
-            'Getting Started',
-            'Core Concepts',
-            'Advanced Topics',
-            'Real-World Projects',
-        ];
         $durations = [
             '18:20', '16:42', '21:10',
             '19:35', '24:08', '17:50',
@@ -72,24 +66,23 @@ class LearningHubContent
         ];
 
         $chapters = $lessons
-            ->values()
-            ->chunk(3)
-            ->map(function (Collection $chunk, int $index) use ($chapterNames, $durations) {
+            ->groupBy(fn ($lesson) => $lesson->chapter_title ?: 'Getting Started')
+            ->map(function (Collection $groupedLessons, string $chapterTitle) use ($lessons, $durations) {
                 return [
-                    'title' => $chapterNames[$index] ?? 'Chapter ' . ($index + 1),
-                    'lessons' => $chunk->values()->map(function ($lesson, int $lessonIndex) use ($durations, $index) {
-                        $durationIndex = ($index * 3) + $lessonIndex;
+                    'title' => $chapterTitle,
+                    'lessons' => $groupedLessons->map(function ($lesson) use ($lessons, $durations) {
+                        $overallIndex = $lessons->search(fn ($l) => $l->id === $lesson->id);
 
                         return [
                             'id' => $lesson->id,
                             'title' => $lesson->title,
                             'slug' => $lesson->slug,
-                            'duration' => $durations[$durationIndex] ?? '18:00',
+                            'duration' => $durations[$overallIndex] ?? '18:00',
                             'completed' => $lesson->order <= 2,
                             'video_url' => $lesson->video_url,
                             'content' => $lesson->content,
                         ];
-                    }),
+                    })->values(),
                 ];
             })
             ->values();
