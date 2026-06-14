@@ -69,7 +69,10 @@ class LmsPublicPagesTest extends TestCase
         $this->get(route('lessons.show', [$course, $lesson]))
             ->assertRedirect(route('login'));
 
-        $this->actingAs(User::factory()->create())
+        $user = User::factory()->create();
+        $course->students()->attach($user->id);
+
+        $this->actingAs($user)
             ->get(route('lessons.show', [$course, $lesson]))
             ->assertOk()
             ->assertSee($lesson->title);

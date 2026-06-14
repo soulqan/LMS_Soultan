@@ -77,30 +77,30 @@
                         @if ($firstSpotlight)
                             <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
                                 <div class="relative aspect-[4/5]">
-                                    @foreach ($categorySpotlights as $index => $spotlight)
+                                    @foreach ($categorySpotlights as $index => $course)
                                         <article
                                             class="absolute inset-0 transition duration-700 ease-out {{ $loop->first ? 'opacity-100' : 'pointer-events-none opacity-0' }}"
                                             data-home-spotlight-item
                                             data-home-spotlight-index="{{ $index }}"
                                         >
                                             <img
-                                                src="{{ $spotlight['meta']['thumbnail'] }}"
-                                                alt="{{ $spotlight['course']->title }}"
+                                                src="{{ $course->thumbnailUrl() }}"
+                                                alt="{{ $course->title }}"
                                                 class="h-full w-full object-cover"
                                                 loading="lazy"
                                             >
                                             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
                                             <div class="absolute inset-x-0 bottom-0 p-6">
                                                 <div class="flex items-center justify-between gap-3">
-                                                    <x-badge tone="blue">{{ $spotlight['category']->name }}</x-badge>
-                                                    <x-badge :tone="$spotlight['course']->level->tone()">{{ $spotlight['course']->level->label() }}</x-badge>
+                                                    <x-badge tone="blue">{{ $course->category->name }}</x-badge>
+                                                    <x-badge :tone="$course->level->tone()">{{ $course->level->label() }}</x-badge>
                                                 </div>
 
-                                                <h2 class="mt-4 text-2xl font-semibold text-white">{{ $spotlight['course']->title }}</h2>
-                                                <p class="mt-2 text-sm leading-6 text-slate-200">{{ $spotlight['meta']['summary'] }}</p>
+                                                <h2 class="mt-4 text-2xl font-semibold text-white">{{ $course->title }}</h2>
+                                                <p class="mt-2 text-sm leading-6 text-slate-200">{{ $course->description }}</p>
 
                                                 <div class="mt-5 flex flex-wrap gap-3">
-                                                    <a href="{{ route('course.show', $spotlight['course']) }}" class="inline-flex items-center justify-center rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100">
+                                                    <a href="{{ route('course.show', $course) }}" class="inline-flex items-center justify-center rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-100">
                                                         View Course
                                                     </a>
                                                     <a href="{{ route('courses.index') }}" class="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15">

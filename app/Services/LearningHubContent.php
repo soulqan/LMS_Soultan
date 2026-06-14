@@ -2,42 +2,11 @@
 
 namespace App\Services;
 
-use App\Enums\CourseLevel;
 use App\Models\Course;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 class LearningHubContent
 {
-    public function catalogFilters(): array
-    {
-        return [
-            'categories' => [
-                'all' => 'All',
-                'web-development' => 'Web Development',
-                'backend-development' => 'Backend Development',
-                'design' => 'Design',
-                'data-science' => 'Data Science',
-                'mobile-development' => 'Mobile Development',
-            ],
-            'levels' => CourseLevel::options(),
-        ];
-    }
-
-    public function courseCardMeta(Course $course): array
-    {
-        $meta = $this->metaFor($course);
-
-        return [
-            'category_badge' => $meta['category_badge'],
-            'level_label' => $course->level->label(),
-            'level_tone' => $course->level->tone(),
-            'thumbnail' => $course->thumbnailUrl(),
-            'summary' => $meta['summary'],
-            'category_slug' => $meta['category_slug'],
-        ];
-    }
-
     public function landingMeta(Course $course): array
     {
         $meta = $this->metaFor($course);
@@ -52,63 +21,6 @@ class LearningHubContent
             'learn' => $meta['learn'],
             'instructor' => $meta['instructor'],
             'thumbnail' => $course->thumbnailUrl(),
-        ];
-    }
-
-    public function playerMeta(Course $course, Collection $lessons): array
-    {
-        $meta = $this->metaFor($course);
-        $durations = [
-            '18:20', '16:42', '21:10',
-            '19:35', '24:08', '17:50',
-            '22:14', '20:03', '23:39',
-            '18:57', '25:12', '26:30',
-        ];
-
-        $chapters = $lessons
-            ->groupBy(fn ($lesson) => $lesson->chapter_title ?: 'Getting Started')
-            ->map(function (Collection $groupedLessons, string $chapterTitle) use ($lessons, $durations) {
-                return [
-                    'title' => $chapterTitle,
-                    'lessons' => $groupedLessons->map(function ($lesson) use ($lessons, $durations) {
-                        $overallIndex = $lessons->search(fn ($l) => $l->id === $lesson->id);
-
-                        return [
-                            'id' => $lesson->id,
-                            'title' => $lesson->title,
-                            'slug' => $lesson->slug,
-                            'duration' => $durations[$overallIndex] ?? '18:00',
-                            'completed' => $lesson->order <= 2,
-                            'video_url' => $lesson->video_url,
-                            'content' => $lesson->content,
-                        ];
-                    })->values(),
-                ];
-            })
-            ->values();
-
-        return [
-            'subtitle' => $meta['subtitle'],
-            'description' => $meta['about'],
-            'learn' => $meta['learn'],
-            'resources' => [
-                [
-                    'label' => 'Course workbook',
-                    'meta' => 'PDF',
-                    'href' => '#',
-                ],
-                [
-                    'label' => 'Source assets',
-                    'meta' => 'ZIP',
-                    'href' => '#',
-                ],
-                [
-                    'label' => 'Checklist',
-                    'meta' => 'MD',
-                    'href' => '#',
-                ],
-            ],
-            'chapters' => $chapters,
         ];
     }
 

@@ -1,10 +1,9 @@
 @props([
     'course',
-    'meta' => [],
 ])
 
 @php
-    $summary = $meta['summary'] ?? ($course?->description ?? '');
+    $summary = $course?->description ?? '';
     $title = $course?->title ?? 'Untitled Course';
     $buttonLabel = (mb_strlen($title) > 30 || mb_strlen($summary) > 120) ? 'Read More' : 'Learn Now';
 @endphp
@@ -21,7 +20,7 @@
     <a href="{{ $course ? route('course.show', $course) : '#' }}" class="block">
         <div class="aspect-video overflow-hidden bg-slate-100">
             <img
-                src="{{ $meta['thumbnail'] ?? ($course?->thumbnailUrl() ?? '') }}"
+                src="{{ $course?->thumbnailUrl() ?? '' }}"
                 alt="{{ $title }}"
                 loading="lazy"
                 class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
@@ -31,7 +30,7 @@
 
     <div class="flex flex-1 flex-col p-4">
         <div class="flex items-center justify-between gap-3">
-            <x-badge tone="blue">{{ $meta['category_badge'] ?? $course?->category?->name }}</x-badge>
+            <x-badge tone="blue">{{ $course?->category?->name }}</x-badge>
             <x-badge :tone="$course?->level?->tone() ?? 'neutral'">{{ $course?->level?->label() ?? 'Course' }}</x-badge>
         </div>
 

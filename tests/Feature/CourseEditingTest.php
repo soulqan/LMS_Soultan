@@ -198,4 +198,25 @@ class CourseEditingTest extends TestCase
         $this->get(route('courses.show', $course))
             ->assertSee('1h 20m');
     }
+
+    public function test_non_admin_cannot_view_unavailable_course(): void
+    {
+        $course = Course::factory()->create(['is_available' => false]);
+        $student = User::factory()->create(['role' => User::ROLE_STUDENT]);
+
+        // Guest cannot view
+        $this->get(route('courses.show', $course))
+            ->assertStatus(404);
+
+        // Student cannot view
+        $this->actingAs($student)
+            ->get(route('courses.show', $course))
+            ->assertStatus(404);
+
+        // Admin can view
+        $admin = User::factory()->create(['role' => User::ROLE_ADMIN]);
+        $this->actingAs($admin)
+            ->get(route('courses.show', $course))
+            ->assertStatus(200);
+    }
 }

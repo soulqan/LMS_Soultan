@@ -182,8 +182,8 @@
                         </div>
 
                         <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                            @forelse ($featuredCourses as $item)
-                                <x-course-card :course="$item['course']" :meta="$item['meta']" />
+                            @forelse ($featuredCourses as $course)
+                                <x-course-card :course="$course" />
                             @empty
                                 <div class="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
                                     No available courses yet.

@@ -34,10 +34,59 @@
                     </div>
                 @endif
 
+                <!-- Title & Description Header Card -->
+                <div class="rounded-xl border border-slate-800 bg-slate-900 p-6">
+                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <h2 class="text-2xl font-semibold text-white view-element">{{ $lesson->title }}</h2>
+                                @if (auth()->check() && auth()->user()->isAdmin())
+                                    <div class="flex gap-2">
+                                        <button type="button" data-lesson-edit-toggle class="rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition">
+                                            Edit Lesson
+                                        </button>
+                                        <button type="submit" data-lesson-edit-save class="hidden rounded-xl bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700 transition">
+                                            Save Changes
+                                        </button>
+                                        <button type="button" data-lesson-edit-cancel class="hidden rounded-xl bg-slate-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 transition">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                @endif
+                            </div>
+                            @if (auth()->check() && auth()->user()->isAdmin())
+                                <div class="edit-element hidden mb-3 mt-2">
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-450 mb-1">Lesson Title</label>
+                                    <input type="text" name="title" value="{{ $lesson->title }}" required class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none text-xl">
+                                </div>
+                            @endif
+                            <p class="mt-2 text-sm text-slate-400">{{ $player['subtitle'] }}</p>
+                        </div>
+
+                        <!-- Mark Complete Button (hide for Quiz since it requires passing the quiz) -->
+                        @if ($lesson->type === 'video' || $lesson->type === 'module')
+                            <button
+                                type="button"
+                                data-mark-complete
+                                data-complete-url="{{ route('lessons.complete', [$course, $lesson]) }}"
+                                @class([
+                                    'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500',
+                                    'bg-green-600 hover:bg-green-700' => $isCompleted,
+                                    'bg-blue-600 hover:bg-blue-700' => !$isCompleted,
+                                ])
+                            >
+                                <x-app-icon name="check-circle" class="h-4 w-4" />
+                                <span data-complete-text>{{ $isCompleted ? 'Completed' : 'Mark as Complete' }}</span>
+                            </button>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Video / Quiz Player Card -->
                 @if ($lesson->type === 'video' || $lesson->type === 'quiz')
-                    <div class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900 mb-6">
+                    <div class="overflow-hidden rounded-xl border border-slate-800 bg-slate-900 view-element">
                         <!-- Dynamic Lesson Type Renderer -->
-                        <div class="view-element">
+                        <div>
                             @if ($lesson->type === 'video')
                                 <div class="relative aspect-video bg-gradient-to-br from-slate-900 via-slate-950 to-black">
                                     @if ($lesson->video_url)
@@ -101,56 +150,11 @@
                     </div>
                 @endif
 
-                <div class="rounded-xl border border-slate-800 bg-slate-900 p-6">
-                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div class="min-w-0 flex-1">
-                            <div class="flex flex-wrap items-center gap-3">
-                                <h2 class="text-2xl font-semibold text-white view-element">{{ $lesson->title }}</h2>
-                                @if (auth()->check() && auth()->user()->isAdmin())
-                                    <div class="flex gap-2">
-                                        <button type="button" data-lesson-edit-toggle class="rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition">
-                                            Edit Lesson
-                                        </button>
-                                        <button type="submit" data-lesson-edit-save class="hidden rounded-xl bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700 transition">
-                                            Save Changes
-                                        </button>
-                                        <button type="button" data-lesson-edit-cancel class="hidden rounded-xl bg-slate-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 transition">
-                                            Cancel
-                                        </button>
-                                    </div>
-                                @endif
-                            </div>
-                            @if (auth()->check() && auth()->user()->isAdmin())
-                                <div class="edit-element hidden mb-3 mt-2">
-                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-450 mb-1">Lesson Title</label>
-                                    <input type="text" name="title" value="{{ $lesson->title }}" required class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none text-xl">
-                                </div>
-                            @endif
-                            <p class="mt-2 text-sm text-slate-400">{{ $player['subtitle'] }}</p>
-                        </div>
-
-                        <!-- Mark Complete Button (hide for Quiz since it requires passing the quiz) -->
-                        @if ($lesson->type === 'video' || $lesson->type === 'quiz')
-                            <button
-                                type="button"
-                                data-mark-complete
-                                data-complete-url="{{ route('lessons.complete', [$course, $lesson]) }}"
-                                @class([
-                                    'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500',
-                                    'bg-green-600 hover:bg-green-700' => $isCompleted,
-                                    'bg-blue-600 hover:bg-blue-700' => !$isCompleted,
-                                ])
-                            >
-                                <x-app-icon name="check-circle" class="h-4 w-4" />
-                                <span data-complete-text>{{ $isCompleted ? 'Completed' : 'Mark as Complete' }}</span>
-                            </button>
-                        @endif
-                    </div>
-
-                    <!-- Dynamic Module Content Renderer -->
-                    @if ($lesson->type === 'module')
-                        @if (!empty($lesson->module_content) && is_array($lesson->module_content))
-                            <div class="mt-8 space-y-8 border-t border-slate-800 pt-6 view-element">
+                <!-- Dynamic Module Content Renderer -->
+                @if ($lesson->type === 'module')
+                    @if (!empty($lesson->module_content) && is_array($lesson->module_content))
+                        <div class="rounded-xl border border-slate-800 bg-slate-900 p-6 view-element">
+                            <div class="space-y-8">
                                 @foreach ($lesson->module_content as $section)
                                     <div class="space-y-4">
                                         <div class="flex items-center gap-3 border-b border-slate-850 pb-3">
@@ -191,11 +195,14 @@
                                     </div>
                                 @endforeach
                             </div>
-                        @endif
+                        </div>
                     @endif
+                @endif
 
-                    @if (auth()->check() && auth()->user()->isAdmin())
-                        <div class="edit-element hidden my-4 grid gap-4 sm:grid-cols-2">
+                <!-- Admin Edit Forms Container Card -->
+                @if (auth()->check() && auth()->user()->isAdmin())
+                    <div class="edit-element hidden rounded-xl border border-slate-800 bg-slate-900 p-6 space-y-6">
+                        <div class="grid gap-4 sm:grid-cols-2">
                             <div>
                                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-450 mb-1">Lesson Type</label>
                                 <select name="type" id="lesson-type-select" required class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white focus:border-blue-500 focus:outline-none">
@@ -212,7 +219,7 @@
                         </div>
 
                         <!-- Module details edit group -->
-                        <div class="edit-element hidden my-4 border-t border-slate-800 pt-4 space-y-4" id="edit-module-details-group">
+                        <div class="border-t border-slate-800 pt-4 space-y-4" id="edit-module-details-group">
                             <div class="flex items-center justify-between">
                                 <h4 class="text-sm font-semibold text-blue-400">Module Structure Configuration</h4>
                                 <button type="button" id="add-module-section" class="inline-flex items-center gap-1 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-700 transition">
@@ -273,7 +280,7 @@
                         </div>
 
                         <!-- Quiz details edit group -->
-                        <div class="edit-element hidden my-4 border-t border-slate-800 pt-4 space-y-4" id="edit-quiz-details-group">
+                        <div class="border-t border-slate-800 pt-4 space-y-4" id="edit-quiz-details-group">
                             <h4 class="text-sm font-semibold text-blue-400">Quiz Configuration</h4>
                             
                             <div>
@@ -300,75 +307,32 @@
                                 </select>
                             </div>
                         </div>
+                    </div>
+                @endif
+
+                <!-- Navigation Buttons -->
+                <div class="flex items-center justify-between pt-6 border-t border-slate-800/60">
+                    @if ($previousLesson)
+                        <a
+                            href="{{ route('course.player', [$course, $previousLesson]) }}"
+                            class="inline-flex items-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-200 transition-colors"
+                        >
+                            <x-app-icon name="chevron-left" class="h-4 w-4" />
+                            <span>Previous Lesson</span>
+                        </a>
+                    @else
+                        <div></div>
                     @endif
 
-                    <div class="mt-8 pt-6 border-t border-slate-800 space-y-6">
-                        <div class="space-y-3">
-                            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <h3 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-450">About This Lesson</h3>
-                                @if ($lesson->type === 'module')
-                                    <button
-                                        type="button"
-                                        data-mark-complete
-                                        data-complete-url="{{ route('lessons.complete', [$course, $lesson]) }}"
-                                        @class([
-                                            'inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500',
-                                            'bg-green-600 hover:bg-green-700' => $isCompleted,
-                                            'bg-blue-600 hover:bg-blue-700' => !$isCompleted,
-                                        ])
-                                    >
-                                        <x-app-icon name="check-circle" class="h-4 w-4" />
-                                        <span data-complete-text>{{ $isCompleted ? 'Completed' : 'Mark as Complete' }}</span>
-                                    </button>
-                                @endif
-                            </div>
-                            <p class="text-sm leading-relaxed text-slate-300 view-element">{{ $lesson->content }}</p>
-                            @if (auth()->check() && auth()->user()->isAdmin())
-                                <div class="edit-element hidden">
-                                    <textarea name="content" rows="6" class="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-white text-sm focus:border-blue-500 focus:outline-none">{{ $lesson->content }}</textarea>
-                                </div>
-                            @endif
-                        </div>
-
-                        <div class="space-y-4 pt-4 border-t border-slate-800/60">
-                            <h3 class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">What You'll Learn</h3>
-                            <div class="grid gap-3 sm:grid-cols-2">
-                                @foreach ($player['learn'] as $item)
-                                    <div class="flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
-                                        <span class="mt-0.5 text-green-500">
-                                            <x-app-icon name="check" class="h-4 w-4" />
-                                        </span>
-                                        <span class="text-sm leading-6 text-slate-300">{{ $item }}</span>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-
-                        <!-- Navigation Buttons -->
-                        <div class="flex items-center justify-between pt-6 border-t border-slate-800/60">
-                            @if ($previousLesson)
-                                <a
-                                    href="{{ route('course.player', [$course, $previousLesson]) }}"
-                                    class="inline-flex items-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-200 transition-colors"
-                                >
-                                    <x-app-icon name="chevron-left" class="h-4 w-4" />
-                                    <span>Previous Lesson</span>
-                                </a>
-                            @else
-                                <div></div>
-                            @endif
-
-                            @if ($nextLesson && (auth()->user()?->isAdmin() || $isCompleted))
-                                <a
-                                    href="{{ route('course.player', [$course, $nextLesson]) }}"
-                                    class="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors"
-                                >
-                                    <span>Next Lesson</span>
-                                    <x-app-icon name="chevron-right" class="h-4 w-4" />
-                                </a>
-                            @endif
-                        </div>
-                    </div>
+                    @if ($nextLesson && (auth()->user()?->isAdmin() || $isCompleted))
+                        <a
+                            href="{{ route('course.player', [$course, $nextLesson]) }}"
+                            class="inline-flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors"
+                        >
+                            <span>Next Lesson</span>
+                            <x-app-icon name="chevron-right" class="h-4 w-4" />
+                        </a>
+                    @endif
                 </div>
             </section>
 

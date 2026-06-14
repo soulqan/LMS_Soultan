@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CourseLevel;
 use App\Models\Category;
 use App\Models\Course;
-use App\Services\LearningHubContent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CourseController extends Controller
 {
-    public function index(LearningHubContent $content): View
+    public function index(): View
     {
         $categories = Category::query()
             ->withCount(['courses' => fn ($query) => $query->where('is_available', true)])
@@ -24,20 +24,21 @@ class CourseController extends Controller
             ->latest()
             ->get();
 
-        $featuredCourses = $courses->map(fn (Course $course) => [
-            'course' => $course,
-            'meta' => $content->courseCardMeta($course),
-        ]);
-
         return view('courses.index', [
             'categories' => $categories,
-            'featuredCourses' => $featuredCourses,
-            'filters' => $content->catalogFilters(),
+            'featuredCourses' => $courses,
+            'filters' => [
+                'levels' => CourseLevel::options(),
+            ],
         ]);
     }
 
-    public function show(Course $course, LearningHubContent $content): View
+    public function show(Course $course): View
     {
+        if (!$course->is_available && (!auth()->check() || !auth()->user()->isAdmin())) {
+            abort(404);
+        }
+
         $course->load(['category', 'lessons' => fn ($query) => $query->orderBy('order')]);
 
         $isEnrolled = auth()->check() 

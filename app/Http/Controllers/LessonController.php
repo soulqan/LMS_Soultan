@@ -4,16 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\Lesson;
-use App\Services\LearningHubContent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class LessonController extends Controller
 {
-    public function show(Course $course, Lesson $lesson, LearningHubContent $content): View|RedirectResponse
+    public function show(Course $course, Lesson $lesson): View|RedirectResponse
     {
         abort_unless($lesson->course_id === $course->id, 404);
+
+        $user = auth()->user();
+        $isEnrolled = $course->students()->where('user_id', $user->id)->exists();
+        $isAdmin = $user && $user->isAdmin();
+
+        if (!$isEnrolled && !$isAdmin) {
+            return redirect()->route('courses.show', $course)
+                ->withErrors(['enrollment' => 'You must be enrolled in this course to view its lessons.']);
+        }
 
         $course->load(['category', 'lessons' => fn ($query) => $query->orderBy('order')]);
         $lesson->load('course.category');
@@ -21,11 +29,8 @@ class LessonController extends Controller
         $lessons = $course->lessons;
         $currentIndex = $lessons->search(fn (Lesson $item) => $item->id === $lesson->id);
 
-        $player = $content->playerMeta($course, $lessons);
-
         // Fetch completed lesson IDs in database for current user
-        $user = auth()->user();
-        $completedLessonIds = $user ? $user->completedLessons()->whereIn('lesson_id', $lessons->pluck('id'))->pluck('lesson_id')->toArray() : [];
+        $completedLessonIds = $user->completedLessons()->whereIn('lesson_id', $lessons->pluck('id'))->pluck('lesson_id')->toArray();
 
         // Determine the sequence: find the first uncompleted lesson
         $firstUncompletedIndex = null;
@@ -37,23 +42,41 @@ class LessonController extends Controller
         }
 
         // Redirect to the first uncompleted lesson if they try to access a locked lesson
-        $isAdmin = $user && $user->isAdmin();
         if (!$isAdmin && $firstUncompletedIndex !== null && $currentIndex > $firstUncompletedIndex) {
             $unlockedLesson = $lessons[$firstUncompletedIndex];
             return redirect()->route('course.player', [$course, $unlockedLesson->slug])
                 ->withErrors(['sequence' => 'You must complete the previous lessons first.']);
         }
 
-        // Map db completion and locked status onto sidebar structure
-        if (isset($player['chapters'])) {
-            foreach ($player['chapters'] as &$chapter) {
-                foreach ($chapter['lessons'] as &$item) {
-                    $item['completed'] = in_array($item['id'], $completedLessonIds);
-                    $itemIndex = $lessons->search(fn (Lesson $l) => $l->id === $item['id']);
-                    $item['locked'] = ($firstUncompletedIndex !== null && $itemIndex > $firstUncompletedIndex);
-                }
-            }
-        }
+        $chapters = $lessons
+            ->groupBy(fn ($l) => $l->chapter_title ?: 'Getting Started')
+            ->map(function (\Illuminate\Support\Collection $groupedLessons, string $chapterTitle) use ($lessons, $completedLessonIds, $firstUncompletedIndex) {
+                return [
+                    'title' => $chapterTitle,
+                    'lessons' => $groupedLessons->map(function ($l) use ($lessons, $completedLessonIds, $firstUncompletedIndex) {
+                        $itemIndex = $lessons->search(fn ($item) => $item->id === $l->id);
+
+                        return [
+                            'id' => $l->id,
+                            'title' => $l->title,
+                            'slug' => $l->slug,
+                            'duration' => $l->duration_minutes . 'm',
+                            'completed' => in_array($l->id, $completedLessonIds),
+                            'locked' => ($firstUncompletedIndex !== null && $itemIndex > $firstUncompletedIndex),
+                            'video_url' => $l->video_url,
+                            'content' => $l->content,
+                        ];
+                    })->values()->toArray(),
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        $player = [
+            'subtitle' => $course->subtitle ?? 'A practical course built for focused progress.',
+            'learn' => $course->what_you_will_learn ?? [],
+            'chapters' => $chapters,
+        ];
 
         $isCompleted = in_array($lesson->id, $completedLessonIds);
 

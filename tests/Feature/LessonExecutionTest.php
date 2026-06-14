@@ -463,4 +463,17 @@ class LessonExecutionTest extends TestCase
             ->assertOk()
             ->assertSee('My Custom Section Title');
     }
+
+    public function test_non_enrolled_student_cannot_view_lessons(): void
+    {
+        $student = User::factory()->create(['role' => User::ROLE_STUDENT]);
+        $course = Course::factory()->create();
+        $lesson = Lesson::factory()->create(['course_id' => $course->id, 'order' => 1]);
+
+        // Student is not enrolled, so they should be redirected with an error
+        $this->actingAs($student)
+            ->get(route('course.player', [$course, $lesson]))
+            ->assertRedirect(route('courses.show', $course))
+            ->assertSessionHasErrors(['enrollment']);
+    }
 }
